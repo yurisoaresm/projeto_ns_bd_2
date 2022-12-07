@@ -146,9 +146,9 @@ COMMENT ON COLUMN pode_alterar.id_funcionario IS 'Esse id serve para identificar
 /* =========================================================================== */
 
 CREATE TABLE medico (
-                id_funcionario NUMBER(10)    nn_hop_  NOT NULL,
-                crm            VARCHAR2(12)  nn_med_crm NOT NULL,
-                especialidade  VARCHAR2(100) nn_med_crm NOT NULL
+                id_funcionario CONSTRAINT NUMBER(10)    CONSTRAINT nn_med_id  NOT NULL,
+                crm            CONSTRAINT VARCHAR2(12)  CONSTRAINT nn_med_crm NOT NULL,
+                especialidade  CONSTRAINT VARCHAR2(100) CONSTRAINT nn_med_esp NOT NULL
 );
 
 -- Primary key da tabela "usuarios":
@@ -203,15 +203,15 @@ COMMENT ON COLUMN hospital.cep IS 'CEP do hospital. Apenas os números.';
 /* =========================================================================== */
 
 CREATE TABLE paciente (
-                id_paciente   NUMBER(10)   NOT NULL,
-                id_hospital   NUMBER(10)   NOT NULL,
-                nome_primeiro VARCHAR2(30) NOT NULL,
-                nome_meio     VARCHAR2(30) NOT NULL,
-                nome_ultimo   VARCHAR2(30) NOT NULL,
-                nascimento    DATE         NOT NULL,
-                peso          NUMBER(5,2)  NOT NULL,
-                leito         VARCHAR2(10) NOT NULL,
-                secao         VARCHAR2(10) NOT NULL
+                id_paciente   NUMBER(10)   CONSTRAINT nn_pacient_id_pacient NOT NULL,
+                id_hospital   NUMBER(10)   CONSTRAINT nn_pacient_id_hosp    NOT NULL,
+                nome_primeiro VARCHAR2(30) CONSTRAINT nn_pacient_nome_p     NOT NULL,
+                nome_meio     VARCHAR2(30) CONSTRAINT nn_pacient_nome_m     NOT NULL,
+                nome_ultimo   VARCHAR2(30) CONSTRAINT nn_pacient_nome_u     NOT NULL,
+                nascimento    DATE         CONSTRAINT nn_pacient_nasc       NOT NULL,
+                peso          NUMBER(5,2)  CONSTRAINT nn_pacient_peso       NOT NULL,
+                leito         VARCHAR2(10) CONSTRAINT nn_pacient_leito      NOT NULL,
+                secao         VARCHAR2(10) CONSTRAINT nn_pacient_secao      NOT NULL
 );
 
 -- Primary key da tabela "paciente":
@@ -238,15 +238,15 @@ COMMENT ON COLUMN Paciente.secao IS 'Seção do hospital que o paciente se encon
 /* =========================================================================== */
 
 CREATE TABLE prescricao (
-                id_prescricao         NUMBER(10)    NOT NULL,
-                id_funcionario        NUMBER(10)    NOT NULL,
-                crm                   VARCHAR2(12)  NOT NULL,
-                id_paciente           NUMBER(10)    NOT NULL,
-                observacao            VARCHAR2(500) NOT NULL,
-                data_prescricao       DATE          NOT NULL,
-                tipo_dieta            VARCHAR2(100) NOT NULL,
-                volume_calorico_total NUMBER(5,3)   NOT NULL,
-                volume_total_produtos NUMBER(6,3)   NOT NULL
+                id_prescricao         NUMBER(10)    CONSTRAINT nn_prescricao_id              NOT NULL,
+                id_funcionario        NUMBER(10)    CONSTRAINT nn_prescricao_id_func         NOT NULL,
+                crm                   VARCHAR2(12)  CONSTRAINT nn_prescricao_crm             NOT NULL,
+                id_paciente           NUMBER(10)    CONSTRAINT nn_prescricao_id_pacient      NOT NULL,
+                observacao            VARCHAR2(500) CONSTRAINT nn_prescricao_observacao      NOT NULL,
+                data_prescricao       DATE          CONSTRAINT nn_prescricao_data_pres       NOT NULL,
+                tipo_dieta            VARCHAR2(100) CONSTRAINT nn_prescricao_tipo_dieta      NOT NULL,
+                volume_calorico_total NUMBER(5,3)   CONSTRAINT nn_prescricao_vol_ca_total    NOT NULL,
+                volume_total_produtos NUMBER(6,3)   CONSTRAINT nn_prescricao_vol_tot_prod    NOT NULL
 );
 
 -- Primary key da tabela "prescricao":
@@ -272,10 +272,10 @@ COMMENT ON COLUMN prescricao.volume_total_produtos IS 'Volume total de produtos 
 /* =========================================================================== */
 
 CREATE TABLE historico (
-                id_historico   NUMBER(10)   NOT NULL,
-                id_alteracao   VARCHAR2(10) NOT NULL,
-                id_funcionario NUMBER(10)   NOT NULL,
-                id_prescricao  NUMBER(10)   NOT NULL
+                id_historico   NUMBER(10)   CONSTRAINT nn_historico_id         NOT NULL,
+                id_alteracao   VARCHAR2(10) CONSTRAINT nn_historico_id_alt     NOT NULL,
+                id_funcionario NUMBER(10)   CONSTRAINT nn_historico_id_func    NOT NULL,
+                id_prescricao  NUMBER(10)   CONSTRAINT nn_historico_id_presc   NOT NULL
 );
 
 -- Primary key da tabela "historico":
@@ -295,10 +295,10 @@ COMMENT ON COLUMN historico.id_prescricao IS 'id para identificar a prescrição
 /* =========================================================================== */
 
 CREATE TABLE produto_solicitado (
-                id_prescricao NUMBER(10)   NOT NULL,
-                id_produto    VARCHAR2(10) NOT NULL,
-                unidade       VARCHAR2(10) NOT NULL,
-                volume        NUMBER(6,3)  NOT NULL
+                id_prescricao NUMBER(10)    CONSTRAINT nn_produto_soli_id_presc   NOT NULL,
+                id_produto    VARCHAR2(10)  CONSTRAINT nn_produto_soli_id         NOT NULL,
+                unidade       VARCHAR2(10)  CONSTRAINT nn_produto_soli_uni        NOT NULL,
+                volume        NUMBER(6,3)   CONSTRAINT nn_produto_soli_vol        NOT NULL
 );
 
 -- Primary key da tabela "produto_solicitado":
@@ -319,8 +319,8 @@ COMMENT ON COLUMN produto_solicitado.volume IS 'Volume';
 /* =========================================================================== */
 
 CREATE TABLE trabalha_em (
-                id_funcionario NUMBER(10) NOT NULL,
-                id_hospital    NUMBER(10) NOT NULL
+                id_funcionario NUMBER(10) CONSTRAINT nn_trabalha_em_id_func NOT NULL,
+                id_hospital    NUMBER(10) CONSTRAINT nn_trabalha_em_id_hosp NOT NULL
 );
 
 -- Primary key da tabela "trabalha_em":
@@ -331,7 +331,7 @@ PRIMARY KEY (id_funcionario, id_hospital);
 COMMENT ON COLUMN trabalha_em.id_funcionario IS 'Esse id serve para identificar o funcionario';
 COMMENT ON COLUMN trabalha_em.id_hospital IS 'id para identificar hospital';
 
-
+-- Criando as foreign keys das tabelas do banco de dados:
 ALTER TABLE produto_solicitado ADD CONSTRAINT PRODUTO_LISTA_PRODUTOS_FK
 FOREIGN KEY (id_produto)
 REFERENCES produto (id_produto)
