@@ -4,11 +4,22 @@
 /* Nesta seção faremos a criação da tabela "produto" e dos demais objetos      */
 /* relacionados (constraints, chaves, checks, etc.).                           */
 /* =========================================================================== */
+drop table produto              cascade constraints;
+drop table produto_solicitado   cascade constraints;
+drop table historico            cascade constraints;
+drop table prescricao           cascade constraints;
+drop table paciente             cascade constraints;
+drop table hospital             cascade constraints;
+drop table trabalha_em          cascade constraints;
+drop table funcionario          cascade constraints;
+drop table pode_alterar         cascade constraints;
+drop table medico               cascade constraints;
+drop table usuarios             cascade constraints;
 
 CREATE TABLE produto (
-                id_produto              VARCHAR2(10)           CONSTRAINT nn_func_id       NOT NULL,
+                id_produto              VARCHAR2(10)           CONSTRAINT nn_prod_id       NOT NULL,
                 subclasse               VARCHAR2(150)          CONSTRAINT nn_prod_sub      NOT NULL,
-                id_comercial            VARCHAR2(150)          CONSTRAINT nn_func_id_com   NOT NULL,
+                id_comercial            VARCHAR2(150)          CONSTRAINT nn_prod_id_com   NOT NULL,
                 nome_generico           VARCHAR2(150)          CONSTRAINT nn_prod_n_g      NOT NULL,
                 nome_ordem_producao     VARCHAR2(150)          CONSTRAINT nn_prod_n_o_prod NOT NULL,
                 nome_comercial          VARCHAR2(150)          CONSTRAINT nn_prod_n_com    NOT NULL,
@@ -18,7 +29,23 @@ CREATE TABLE produto (
                 osmolaridade            NUMBER(5,3)            CONSTRAINT nn_prod_osmol    NOT NULL,
                 fator_calorico          NUMBER(5,3)            CONSTRAINT nn_prod_f_cal    NOT NULL
 );
+drop sequence seq_produto;
+create sequence seq_produto
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
+    
+    
 
+create or replace NONEDITIONABLE TRIGGER ID_PRODUTO 
+BEFORE INSERT ON produto 
+FOR EACH ROW
+BEGIN
+  :new.id_produto := seq_produto.nextval;
+END;
+/
 -- Primary key da tabela "produto":
 ALTER TABLE produto ADD CONSTRAINT produto_pk
 PRIMARY KEY (id_produto);
@@ -48,7 +75,7 @@ COMMENT ON COLUMN produto.fator_calorico IS 'Caloria padrão do produto.';
 /* =========================================================================== */
 
 CREATE TABLE funcionario (
-                id_funcionario  NUMBER(10)             CONSTRAINT nn_func_id     NOT NULL,
+                id_funcionario  VARCHAR2(10)           CONSTRAINT nn_func_id     NOT NULL,
                 cpf             VARCHAR2(11)           CONSTRAINT nn_func_cpf    NOT NULL,
                 nome_primeiro   VARCHAR2(30)           CONSTRAINT nn_func_nome_p NOT NULL,
                 nome_meio       VARCHAR2(30)           CONSTRAINT nn_func_nome_m NOT NULL,
@@ -58,6 +85,22 @@ CREATE TABLE funcionario (
                 administrador   NUMBER(1)    DEFAULT 0 CONSTRAINT nn_func_adm    NOT NULL
 );
 
+drop sequence seq_funcionario;
+create sequence seq_funcionario
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
+
+
+create or replace NONEDITIONABLE TRIGGER ID_FUNCIONARIO
+BEFORE INSERT ON funcionario 
+FOR EACH ROW
+BEGIN
+  :new.id_funcionario := seq_funcionario.nextval;
+END;
+/
 -- Primary key da tabela "funcionario":
 ALTER TABLE funcionario ADD CONSTRAINT funcionario_pk
 PRIMARY KEY (id_funcionario);
@@ -90,8 +133,8 @@ COMMENT ON COLUMN funcionario.administrador IS '0 para não administrador
 /* =========================================================================== */
 
 CREATE TABLE usuarios (
-                username             VARCHAR2             CONSTRAINT nn_usuar_user      NOT NULL,
-                id_funcionario       NUMBER(10)           CONSTRAINT nn_usuar_id        NOT NULL,
+                username             VARCHAR2(50)         CONSTRAINT nn_usuar_user      NOT NULL,
+                id_funcionario       VARCHAR2(10)           CONSTRAINT nn_usuar_id        NOT NULL,
                 permissao_prescrever NUMBER(1)  DEFAULT 0 CONSTRAINT nn_usuar_perm_pres NOT NULL,
                 permissao_alterar    NUMBER(1)  DEFAULT 0 CONSTRAINT nn_usuar_perm_alt  NOT NULL,
                 senha                VARCHAR2(8)          CONSTRAINT nn_usuar_senha     NOT NULL
@@ -125,10 +168,25 @@ COMMENT ON COLUMN usuarios.senha IS 'Senha do usuário.';
 
 CREATE TABLE pode_alterar (
                 id_alteracao   VARCHAR2(10) CONSTRAINT nn_pode_al_id_a  NOT NULL,
-                id_funcionario NUMBER(10)   CONSTRAINT nn_pode_al_id_f  NOT NULL,
+                id_funcionario VARCHAR2(10)   CONSTRAINT nn_pode_al_id_f  NOT NULL,
                 data_alteracao DATE         CONSTRAINT nn_pode_al_dt_al NOT NULL
 );
+drop sequence seq_pode_al;
+create sequence seq_pode_al
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
 
+
+create or replace NONEDITIONABLE TRIGGER ID_ALTERACAO
+BEFORE INSERT ON pode_alterar 
+FOR EACH ROW
+BEGIN
+  :new.id_alteracao := seq_pode_al.nextval;
+END;
+/
 -- Primary key da tabela "usuarios":
 ALTER TABLE pode_alterar ADD CONSTRAINT pode_alterar_pk
 PRIMARY KEY (id_alteracao, id_funcionario);
@@ -146,9 +204,9 @@ COMMENT ON COLUMN pode_alterar.id_funcionario IS 'Esse id serve para identificar
 /* =========================================================================== */
 
 CREATE TABLE medico (
-                id_funcionario CONSTRAINT NUMBER(10)    CONSTRAINT nn_med_id  NOT NULL,
-                crm            CONSTRAINT VARCHAR2(12)  CONSTRAINT nn_med_crm NOT NULL,
-                especialidade  CONSTRAINT VARCHAR2(100) CONSTRAINT nn_med_esp NOT NULL
+                id_funcionario  VARCHAR2(10)    CONSTRAINT nn_med_id  NOT NULL,
+                crm             VARCHAR2(12)  CONSTRAINT nn_med_crm NOT NULL,
+                especialidade   VARCHAR2(100) CONSTRAINT nn_med_esp NOT NULL
 );
 
 -- Primary key da tabela "usuarios":
@@ -169,9 +227,9 @@ COMMENT ON COLUMN medico.especialidade IS 'Especialidade do médico.';
 /* =========================================================================== */
 
 CREATE TABLE hospital (
-                id_hospital   NUMBER(10)    CONSTRAINT nn_hosp_id      NOT NULL,
+                id_hospital   VARCHAR2(10)    CONSTRAINT nn_hosp_id      NOT NULL,
                 CNPJ          VARCHAR2(14)  CONSTRAINT nn_hosp_cnpj    NOT NULL,
-                numero_imovel VARCHAR2      CONSTRAINT nn_hosp_num_imo NOT NULL,
+                numero_imovel VARCHAR2(50)  CONSTRAINT nn_hosp_num_imo NOT NULL,
                 razao_social  VARCHAR2(200) CONSTRAINT nn_hosp_raz_soc NOT NULL,
                 cidade        VARCHAR2(100) CONSTRAINT nn_hosp_cid     NOT NULL,
                 rua           VARCHAR2(100) CONSTRAINT nn_hosp_rua     NOT NULL,
@@ -180,17 +238,33 @@ CREATE TABLE hospital (
                 cep           VARCHAR2(8)   CONSTRAINT nn_hosp_cep     NOT NULL
 );
 
+
 -- Primary key da tabela "hospital":
 ALTER TABLE hospital ADD CONSTRAINT hospital_pk
 PRIMARY KEY (id_hospital);
 
+drop sequence seq_hospital;
+create sequence seq_hospital
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
+
+create or replace NONEDITIONABLE TRIGGER ID_HOSPITAL
+BEFORE INSERT ON hospital
+FOR EACH ROW
+BEGIN
+  :new.id_hospital := seq_hospital.nextval;
+END;
+/
 -- Comentários da tabela "hospital":
 COMMENT ON COLUMN hospital.id_hospital IS 'id para identificar hospital';
 COMMENT ON COLUMN hospital.CNPJ IS 'CPNJ do hospital. Somente números.';
 COMMENT ON COLUMN hospital.razao_social IS 'Razão social do hospital.';
 COMMENT ON COLUMN hospital.rua IS 'Nome da da rua.';
 COMMENT ON COLUMN hospital.numero IS 'Número da instituição.';
-COMMENT ON COLUMN hospital.cidade_1 IS 'Cidade onde está localizado o hospital.';
+COMMENT ON COLUMN hospital.cidade IS 'Cidade onde está localizado o hospital.';
 COMMENT ON COLUMN hospital.estado IS 'Estado onde está localizado o hospital. (Sigla)';
 COMMENT ON COLUMN hospital.cep IS 'CEP do hospital. Apenas os números.';
 
@@ -203,8 +277,8 @@ COMMENT ON COLUMN hospital.cep IS 'CEP do hospital. Apenas os números.';
 /* =========================================================================== */
 
 CREATE TABLE paciente (
-                id_paciente   NUMBER(10)   CONSTRAINT nn_pacient_id_pacient NOT NULL,
-                id_hospital   NUMBER(10)   CONSTRAINT nn_pacient_id_hosp    NOT NULL,
+                id_paciente   VARCHAR2(10)   CONSTRAINT nn_pacient_id_pacient NOT NULL,
+                id_hospital   VARCHAR2(10)   CONSTRAINT nn_pacient_id_hosp    NOT NULL,
                 nome_primeiro VARCHAR2(30) CONSTRAINT nn_pacient_nome_p     NOT NULL,
                 nome_meio     VARCHAR2(30) CONSTRAINT nn_pacient_nome_m     NOT NULL,
                 nome_ultimo   VARCHAR2(30) CONSTRAINT nn_pacient_nome_u     NOT NULL,
@@ -213,7 +287,22 @@ CREATE TABLE paciente (
                 leito         VARCHAR2(10) CONSTRAINT nn_pacient_leito      NOT NULL,
                 secao         VARCHAR2(10) CONSTRAINT nn_pacient_secao      NOT NULL
 );
+drop sequence seq_paciente;
+create sequence seq_paciente
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
 
+
+create or replace NONEDITIONABLE TRIGGER ID_PACIENTE
+BEFORE INSERT ON paciente
+FOR EACH ROW
+BEGIN
+  :new.id_paciente := seq_paciente.nextval;
+END;
+/
 -- Primary key da tabela "paciente":
 ALTER TABLE paciente ADD CONSTRAINT paciente_pk
 PRIMARY KEY (id_paciente);
@@ -238,17 +327,32 @@ COMMENT ON COLUMN Paciente.secao IS 'Seção do hospital que o paciente se encon
 /* =========================================================================== */
 
 CREATE TABLE prescricao (
-                id_prescricao         NUMBER(10)    CONSTRAINT nn_prescricao_id              NOT NULL,
-                id_funcionario        NUMBER(10)    CONSTRAINT nn_prescricao_id_func         NOT NULL,
+                id_prescricao         VARCHAR2(10)    CONSTRAINT nn_prescricao_id              NOT NULL,
+                id_funcionario        VARCHAR2(10)    CONSTRAINT nn_prescricao_id_func         NOT NULL,
                 crm                   VARCHAR2(12)  CONSTRAINT nn_prescricao_crm             NOT NULL,
-                id_paciente           NUMBER(10)    CONSTRAINT nn_prescricao_id_pacient      NOT NULL,
+                id_paciente           VARCHAR2(10)    CONSTRAINT nn_prescricao_id_pacient      NOT NULL,
                 observacao            VARCHAR2(500) CONSTRAINT nn_prescricao_observacao      NOT NULL,
                 data_prescricao       DATE          CONSTRAINT nn_prescricao_data_pres       NOT NULL,
                 tipo_dieta            VARCHAR2(100) CONSTRAINT nn_prescricao_tipo_dieta      NOT NULL,
                 volume_calorico_total NUMBER(5,3)   CONSTRAINT nn_prescricao_vol_ca_total    NOT NULL,
                 volume_total_produtos NUMBER(6,3)   CONSTRAINT nn_prescricao_vol_tot_prod    NOT NULL
 );
+drop sequence seq_prescricao;
+create sequence seq_prescricao
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
 
+
+create or replace NONEDITIONABLE TRIGGER ID_PRESCRICAO
+BEFORE INSERT ON prescricao
+FOR EACH ROW
+BEGIN
+  :new.id_prescricao := seq_prescricao.nextval;
+END;
+/
 -- Primary key da tabela "prescricao":
 ALTER TABLE prescricao ADD CONSTRAINT prescricao_pk
 PRIMARY KEY (id_prescricao);
@@ -272,12 +376,27 @@ COMMENT ON COLUMN prescricao.volume_total_produtos IS 'Volume total de produtos 
 /* =========================================================================== */
 
 CREATE TABLE historico (
-                id_historico   NUMBER(10)   CONSTRAINT nn_historico_id         NOT NULL,
+                id_historico   VARCHAR2(10)   CONSTRAINT nn_historico_id         NOT NULL,
                 id_alteracao   VARCHAR2(10) CONSTRAINT nn_historico_id_alt     NOT NULL,
-                id_funcionario NUMBER(10)   CONSTRAINT nn_historico_id_func    NOT NULL,
-                id_prescricao  NUMBER(10)   CONSTRAINT nn_historico_id_presc   NOT NULL
+                id_funcionario VARCHAR2(10)   CONSTRAINT nn_historico_id_func    NOT NULL,
+                id_prescricao  VARCHAR2(10)   CONSTRAINT nn_historico_id_presc   NOT NULL
 );
+drop sequence seq_historico;
+create sequence seq_historico
+    start with 1
+    increment by 1
+    maxvalue 99999
+    minvalue 1
+    ;
 
+
+create or replace NONEDITIONABLE TRIGGER ID_HISTORICO
+BEFORE INSERT ON historico
+FOR EACH ROW
+BEGIN
+  :new.id_historico := seq_historico.nextval;
+END;
+/
 -- Primary key da tabela "historico":
 ALTER TABLE historico ADD CONSTRAINT historico_pk
 PRIMARY KEY (id_historico);
@@ -295,7 +414,7 @@ COMMENT ON COLUMN historico.id_prescricao IS 'id para identificar a prescrição
 /* =========================================================================== */
 
 CREATE TABLE produto_solicitado (
-                id_prescricao NUMBER(10)    CONSTRAINT nn_produto_soli_id_presc   NOT NULL,
+                id_prescricao VARCHAR2(10)    CONSTRAINT nn_produto_soli_id_presc   NOT NULL,
                 id_produto    VARCHAR2(10)  CONSTRAINT nn_produto_soli_id         NOT NULL,
                 unidade       VARCHAR2(10)  CONSTRAINT nn_produto_soli_uni        NOT NULL,
                 volume        NUMBER(6,3)   CONSTRAINT nn_produto_soli_vol        NOT NULL
@@ -319,8 +438,8 @@ COMMENT ON COLUMN produto_solicitado.volume IS 'Volume';
 /* =========================================================================== */
 
 CREATE TABLE trabalha_em (
-                id_funcionario NUMBER(10) CONSTRAINT nn_trabalha_em_id_func NOT NULL,
-                id_hospital    NUMBER(10) CONSTRAINT nn_trabalha_em_id_hosp NOT NULL
+                id_funcionario VARCHAR2(10) CONSTRAINT nn_trabalha_em_id_func NOT NULL,
+                id_hospital    VARCHAR2(10) CONSTRAINT nn_trabalha_em_id_hosp NOT NULL
 );
 
 -- Primary key da tabela "trabalha_em":
