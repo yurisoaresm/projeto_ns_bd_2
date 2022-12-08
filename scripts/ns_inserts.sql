@@ -53,9 +53,9 @@ INSERT INTO trabalha_em (id_funcionario, id_hospital) VALUES (
 
 -- Insere dados na tabela "produto":
 Prompt **** Inserindo dados na tabela produto:
-INSERT INTO produto (subclasse, id_comercial, nome_generico, nome_ordem_producao, nome_cormercial, sigla, controla_fator_calorico, controla_osmolaridade, osmolaridade, fator_calorico ) VALUES (
+INSERT INTO produto (subclasse, id_comercial, nome_generico, nome_ordem_producao, nome_comercial, sigla, controla_fator_calorico, controla_osmolaridade, osmolaridade, fator_calorico ) VALUES (
   'Aminoácidos', 'Aminoplasmal 10% Poliaminoácidos - Frasco 1000 mL - Laboratórios B. Braun', 'Aminoácido 10% Adulto', 'Aminoácido 10% Adulto', 'Aminoplasmal 10% - Laboratórios B. Braun','mL', 1, 1, 0.99, 0.4
 );
-INSERT INTO produto (subclasse, id_comercial, nome_generico, nome_ordem_producao, nome_cormercial, sigla, controla_fator_calorico, controla_osmolaridade, osmolaridade, fator_calorico ) VALUES (
+INSERT INTO produto (subclasse, id_comercial, nome_generico, nome_ordem_producao, nome_comercial, sigla, controla_fator_calorico, controla_osmolaridade, osmolaridade, fator_calorico ) VALUES (
   'Aminoácidos', 'Aminosteril Hepa 8% - Frasco 500 mL - Fresenius', 'Aminoácido Hepatopata 8%', 'Aminoácido Hepatopata 8%- 500 mL', 'Aminosteril Hepa 8% - Fresenius', 'mL', 1, 1, 0.77, 0.32
 );
