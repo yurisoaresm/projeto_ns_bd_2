@@ -327,16 +327,22 @@ COMMENT ON COLUMN Paciente.secao IS 'Seção do hospital que o paciente se encon
 /* =========================================================================== */
 
 CREATE TABLE prescricao (
-                id_prescricao         VARCHAR2(10)    CONSTRAINT nn_prescricao_id              NOT NULL,
-                id_funcionario        VARCHAR2(10)    CONSTRAINT nn_prescricao_id_func         NOT NULL,
-                crm                   VARCHAR2(12)  CONSTRAINT nn_prescricao_crm             NOT NULL,
-                id_paciente           VARCHAR2(10)    CONSTRAINT nn_prescricao_id_pacient      NOT NULL,
-                observacao            VARCHAR2(500) CONSTRAINT nn_prescricao_observacao      NOT NULL,
-                data_prescricao       DATE          CONSTRAINT nn_prescricao_data_pres       NOT NULL,
-                tipo_dieta            VARCHAR2(100) CONSTRAINT nn_prescricao_tipo_dieta      NOT NULL,
-                volume_calorico_total NUMBER(5,3)   CONSTRAINT nn_prescricao_vol_ca_total    NOT NULL,
-                volume_total_produtos NUMBER(6,3)   CONSTRAINT nn_prescricao_vol_tot_prod    NOT NULL
-);
+                id_prescricao         VARCHAR2(10)                  CONSTRAINT nn_prescricao_id              NOT NULL,
+                id_funcionario        VARCHAR2(10)                  CONSTRAINT nn_prescricao_id_func         NOT NULL,
+                crm                   VARCHAR2(12)                  CONSTRAINT nn_prescricao_crm             NOT NULL,
+                id_paciente           VARCHAR2(10)                  CONSTRAINT nn_prescricao_id_pacient      NOT NULL,
+                observacao            VARCHAR2(500)                 CONSTRAINT nn_prescricao_observacao      NOT NULL,
+                data_prescricao       DATE                          CONSTRAINT nn_prescricao_data_pres       NOT NULL,
+                tipo_dieta            VARCHAR2(100)                 CONSTRAINT nn_prescricao_tipo_dieta      NOT NULL,
+                volume_calorico_total NUMBER(5,3)                   CONSTRAINT nn_prescricao_vol_ca_total    NOT NULL,
+                volume_total_produtos NUMBER(6,3)                   CONSTRAINT nn_prescricao_vol_tot_prod    NOT NULL,
+                liberado              VARCHAR(1)      DEFAULT 'N'   CONSTRAINT nn_prescricao_lib             NOT NULL
+);  
+
+alter table prescricao
+add constraint prescricao_lib
+check (liberado in ('N', 'S'));
+
 drop sequence seq_prescricao;
 create sequence seq_prescricao
     start with 1
@@ -377,7 +383,7 @@ COMMENT ON COLUMN prescricao.volume_total_produtos IS 'Volume total de produtos 
 
 CREATE TABLE historico (
                 id_historico   VARCHAR2(10)   CONSTRAINT nn_historico_id         NOT NULL,
-                id_alteracao   VARCHAR2(10) CONSTRAINT nn_historico_id_alt     NOT NULL,
+                id_alteracao   VARCHAR2(10)   CONSTRAINT nn_historico_id_alt     NOT NULL,
                 id_funcionario VARCHAR2(10)   CONSTRAINT nn_historico_id_func    NOT NULL,
                 id_prescricao  VARCHAR2(10)   CONSTRAINT nn_historico_id_presc   NOT NULL
 );
@@ -441,6 +447,30 @@ CREATE TABLE trabalha_em (
                 id_funcionario VARCHAR2(10) CONSTRAINT nn_trabalha_em_id_func NOT NULL,
                 id_hospital    VARCHAR2(10) CONSTRAINT nn_trabalha_em_id_hosp NOT NULL
 );
+
+
+create or replace NONEDITIONABLE TRIGGER FINALIZADO_PRESCRICAO
+BEFORE DELETE OR UPDATE ON PRESCRICAO
+FOR EACH ROW
+BEGIN
+
+    IF :old.liberado = 'N' then
+        raise_application_error(-20000,'Não é possivel modificar os dados de uma prescricao finalizada');
+    END IF;
+
+END;
+/
+
+CREATE OR REPLACE EDITIONABLE TRIGGER  "PRESCRICAO_TO_HISTORICO" 
+AFTER
+insert on "HISTORICO"
+for each row
+    begin
+        insert into HISTORICO (ID_ALTERACAO,ID_FUNCIONARIO,ID_PRESCRICAO)
+        values (:new.ID_PRESCRICAO,:new.ID_FUNCIONARIO,:new.ID_PRESCRICAO);
+end;
+
+/
 
 -- Primary key da tabela "trabalha_em":
 ALTER TABLE trabalha_em ADD CONSTRAINT trabalha_em_pk
@@ -510,3 +540,4 @@ ALTER TABLE historico ADD CONSTRAINT PRESCRICAO_HISTORICO_FK
 FOREIGN KEY (id_prescricao)
 REFERENCES prescricao (id_prescricao)
 NOT DEFERRABLE;
+
